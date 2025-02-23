@@ -1,6 +1,7 @@
 class CategoryModel {
   final int id;
-  final String title, image;
+  final String title;
+  final String image;
   final bool main;
 
   CategoryModel({
@@ -10,10 +11,12 @@ class CategoryModel {
     required this.main,
   });
 
-  factory CategoryModel.fromJson(Map<String, dynamic> json) => CategoryModel(
-    id: json['id'] as int,
-    title: json['title'] as String,
-    image: json['image'] as String,
-    main: json['main'] as bool,
-  );
+  factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    return CategoryModel(
+      id: json["id"],
+      title: json["title"],
+      image: json["image"],
+      main: json["main"],
+    );
+  }
 }

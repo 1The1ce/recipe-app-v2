@@ -1,10 +1,10 @@
 class OnboardingModel {
-  final int id;
-  final String title, subtitle;
-  final String image;
+  final int id, order;
+  final String title, subtitle, image;
 
   OnboardingModel({
     required this.id,
+    required this.order,
     required this.title,
     required this.subtitle,
     required this.image,
@@ -12,10 +12,11 @@ class OnboardingModel {
 
   factory OnboardingModel.fromJson(Map<String, dynamic> json) {
     return OnboardingModel(
-      id: json['id'],
-      title: json['title'],
-      subtitle: json['subtitle'],
-      image: json['picture'],
+      id: json["id"],
+      order: json["order"],
+      title: json["title"],
+      subtitle: json["subtitle"],
+      image: json["picture"],
     );
   }
 }

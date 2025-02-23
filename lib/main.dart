@@ -1,102 +1,73 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:recipe_app/categories/data/repositories/categories_repository.dart';
+import 'package:recipe_app/categories/presentation/pages/categories_view.dart';
+import 'package:recipe_app/categories/presentation/pages/categories_view_model.dart';
+import 'package:recipe_app/core/client.dart';
 import 'package:recipe_app/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:recipe_app/onboarding/presentation/pages/onboarding_view.dart';
-import 'package:recipe_app/profile/data/repositories/profile_repository.dart';
-import 'package:recipe_app/profile/presentation/pages/profile_view.dart';
-import 'package:recipe_app/profile/presentation/manager/profile_view_model.dart';
-import 'package:recipe_app/recipe_detail/data/repositories/recipe_detail_repository.dart';
-import 'package:recipe_app/recipe_detail/presentation/pages/recipe_detail_view.dart';
-import 'package:recipe_app/recipe_detail/presentation/pages/recipe_detail_view_model.dart';
-import 'package:recipe_app/signup/presentation/pages/login_view.dart';
+import 'package:recipe_app/onboarding/presentation/pages/onboarding_view_model.dart';
+import 'package:recipe_app/onboarding/presentation/pages/onboarding_last_page.dart';
+import 'package:recipe_app/profile/data/repositories/user_repository.dart';
+import 'package:recipe_app/profile/presentation/pages/user_view.dart';
+import 'package:recipe_app/recipe_detail/data/repositories/category_detail_repository.dart';
+import 'package:recipe_app/recipe_detail/presentation/manager/category_detail_view_model.dart';
+import 'package:recipe_app/recipe_detail/presentation/pages/category_detail_view.dart';
 
-import 'categories/data/models/category_model.dart';
-import 'categories/data/repositories/categories_repository.dart';
-import 'categories/presentation/pages/categories_view.dart';
-import 'categories/presentation/pages/categories_view_model.dart';
-import 'categories_detail/data/models/recipe_model_small.dart';
-import 'categories_detail/data/repositories/categories_detail_repository.dart';
-import 'categories_detail/presentation/pages/categories_detail_view.dart';
-import 'categories_detail/presentation/pages/categories_detail_view_model.dart';
-import 'core/core.dart';
-import 'home/presentation/pages/home_view.dart';
+import 'core/utils/theme.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(RecipeApp());
 }
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-
-GoRouter router = GoRouter(
-  navigatorKey: navigatorKey,
-  initialLocation: '/',
+GoRouter _router = GoRouter(
+  initialLocation: "/categories",
   routes: [
     GoRoute(
-      path: '/',
-      builder: (context, state) => HomeView(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => LoginView(),
-    ),
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => OnboardingView(),
-    ),
-    GoRoute(
-      path: '/categories',
-      builder: (context, state) {
-        return CategoriesView(
-          viewModel: CategoriesViewModel(repo: context.read()),
-        );
-      },
-      routes: [
-        GoRoute(
-          path: '/detail',
-          builder: (context, state) => CategoriesDetailView(
-            viewModel: CategoriesDetailViewModel(
-              repo: context.read(),
-              catsRepo: context.read(),
-              selected: state.extra as CategoryModel,
-            ),
-          ),
-        ),
-      ],
-    ),
-    GoRoute(
-      path: '/recipe',
-      builder: (context, state) => RecipeDetailView(
-        viewModel: RecipeDetailViewModel(
-          repo: context.read(),
-          selected: state.extra as RecipeModelSmall,
-          from: state.uri.queryParameters['from'] as String,
-        ),
+      path: "/onboarding",
+      builder: (context, state) => OnboardingView(
+        viewModel:
+            OnboardingViewModel(repo: context.read(), cateRepo: context.read()),
       ),
     ),
     GoRoute(
-      path: '/profile/me',
-      builder: (context, state) => ProfileView(),
+      path: "/user/:userId",
+      builder: (context, state) {
+        final userId = int.tryParse(
+              state.pathParameters["userId"] ?? "2",
+            ) ??
+            2;
+        return UserView(userId: userId);
+      },
     ),
+    GoRoute(
+        path: "/welcome",
+        builder: (context, state) => OnboardingLastPage(
+              viewModel: OnboardingViewModel(
+                  repo: context.read(), cateRepo: context.read()),
+            )),
+    GoRoute(
+        path: "/categories",
+        builder: (context, state) => CategoriesView(
+                viewModel: CategoriesViewModel(
+              repo: context.read(),
+            ))),
+    GoRoute(
+        path: "/category/detail/:categoryId",
+        builder: (context, state) {
+          final int categoryId =
+              int.tryParse(state.pathParameters["categoryId"] ?? "2") ?? 2;
+          return CategoryDetailView(
+            viewModel: CategoryDetailViewModel(
+              repo: context.read(),
+              categoryId: categoryId,
+              cateRepo: context.read(),
+            ),
+            categoryId: categoryId,
+          );
+        })
   ],
-  redirect: (context, state) {
-    // final isAuthenticated = vm.isAuthenticated;
-    // final isLoggingIn = state.uri.toString() == '/login';
-    //
-    // if (!isAuthenticated && !isLoggingIn) {
-    //   return '/login';
-    // }
-    //
-    // if (isAuthenticated && isLoggingIn) {
-    //   return '/';
-    // }
-
-    return null;
-  },
 );
 
 class RecipeApp extends StatelessWidget {
@@ -104,24 +75,23 @@ class RecipeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    AppSizes.init(context);
     return MultiProvider(
       providers: [
         Provider(create: (context) => ApiClient()),
-        Provider(create: (context) => ProfileRepository(client: context.read())),
-        Provider(create: (context) => OnboardingRepository(client: context.read())),
-        Provider(create: (context) => CategoriesRepository(client: context.read<ApiClient>())),
-        Provider(create: (context) => CategoriesDetailRepository(client: context.read())),
-        Provider(create: (context) => RecipeDetailRepository(client: context.read())),
-        Provider(create: (context) => RecipeRepository(client: context.read())),
-        Provider(create: (context) => TopChefRepository(client: context.read())),
-        Provider(create: (context) => AuthRepository(client: context.read())),
-        ChangeNotifierProvider(create: (context) => AuthViewModel(authRepository: context.read())),
+        Provider(
+            create: (context) => OnboardingRepository(client: context.read())),
+        Provider(create: (context) => UserRepository(client: context.read())),
+        Provider(
+            create: (context) => CategoryDetailRepository(
+                  apiClient: context.read(),
+                )),
+        Provider(
+            create: (context) => CategoriesRepository(client: context.read()))
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         theme: appThemeData,
-        routerConfig: router,
+        routerConfig: _router,
       ),
     );
   }

@@ -1,46 +1,83 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:recipe_app/core/core.dart';
-
-import '../../data/models/category_model.dart';
-
+import 'package:recipe_app/categories/data/models/category_model.dart';
 
 class CategoryItem extends StatelessWidget {
-  const CategoryItem({
-    super.key,
-    required this.category,
-    this.main = false,
-    this.width = 159,
-    this.height = 145,
-  });
+  const CategoryItem({super.key, required this.model});
 
-  final CategoryModel category;
-  final double width, height;
-  final bool main;
+  final CategoryModel model;
 
   @override
   Widget build(BuildContext context) {
-    Widget image = Center(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: Image(
-          image: CachedNetworkImageProvider(category.image),
-          width: width * AppSizes.wRatio,
-          height: height * AppSizes.hRatio,
-          fit: BoxFit.cover,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Image.network(
+            model.image,
+            width: 158,
+            height: 144,
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
+        SizedBox(height: 6,),
+        Text(
+          model.title,
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: "Poppins",
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          maxLines: 1,
+          softWrap: true,
+        ),
+      ],
     );
+  }
+}
 
-    Widget title = Text(category.title);
+
+
+
+class CategoryMainItem extends StatelessWidget {
+  const CategoryMainItem({super.key, required this.model});
+
+  final CategoryModel model;
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go('/categories/detail', extra: category),
+      onTap: (){
+        // context.go("categories");
+      },
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          main ? title : image,
-          SizedBox(height: 5),
-          main ? image : title,
+          Text(
+            model.title,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: "Poppins",
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            softWrap: true,
+          ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              model.image,
+              width: double.infinity,
+              height: 149,
+              fit: BoxFit.cover,
+            ),
+          ),
+          SizedBox(height: 6,),
+
         ],
       ),
     );
